@@ -26,9 +26,13 @@ func main() {
 		cfg.RedirectURL,
 	)
 
+	if GoogleOAuth == nil {
+		log.Fatalf("Failed to initialized GoogleOAuth")
+	}
+
 	//ハンドラーの初期化
 	healthHandler := handlers.NewHealthHandler(db)
-	authHandler := handlers.NewAuthHandler(GoogleOAuth)
+	authHandler := handlers.NewAuthHandler(GoogleOAuth,db)
 
 	//ルーターのセットアップ
 	r := router.SetupRouter(healthHandler,authHandler)

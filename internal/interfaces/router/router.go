@@ -8,6 +8,9 @@ import (
 
 func SetupRouter(healthHandler *handlers.HealthHandler, authHandler *handlers.AuthHandler) *gin.Engine{
 	r := gin.Default()
+	
+	// パニックリカバリーミドルウェアを追加
+	r.Use(gin.Recovery())
 
 	r.GET("/health",healthHandler.Check)
 

@@ -27,16 +27,18 @@ func NewConfig() *Config {
         RedirectURL:        os.Getenv("REDIRECT_URL"),
         DatabaseURL:        os.Getenv("DATABASE_URL"),
     }
+    // デバッグ用のログ追加
+    log.Printf("Configuration loaded:")
+    log.Printf("- Client ID exists: %v", cfg.GoogleClientID != "")
+    log.Printf("- Client Secret exists: %v", cfg.GoogleClientSecret != "")
+    log.Printf("- Redirect URL: %s", cfg.RedirectURL)
 
-    // 必須値の検証
-    if cfg.GoogleClientID == "" {
-        log.Fatal("GOOGLE_CLIENT_ID is not set")
-    }
-    if cfg.GoogleClientSecret == "" {
-        log.Fatal("GOOGLE_CLIENT_SECRET is not set")
+    // 値の検証を追加
+    if cfg.GoogleClientID == "" || cfg.GoogleClientSecret == "" {
+        log.Fatal("Google OAuth credentials are missing")
     }
     if cfg.RedirectURL == "" {
-        log.Fatal("REDIRECT_URL is not set")
+        log.Fatal("Redirect URL is missing")
     }
 
     return cfg
