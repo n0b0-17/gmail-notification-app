@@ -4,10 +4,10 @@ import (
 	"gmail-notification-app/config"
 	"gmail-notification-app/internal/infrastructure/database"
 	"gmail-notification-app/internal/infrastructure/oauth"
+	"gmail-notification-app/internal/interfaces/handlers"
+	"gmail-notification-app/internal/interfaces/router"
 	"log"
-	"os"
 
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -26,38 +26,16 @@ func main() {
 		cfg.RedirectURL,
 	)
 
-  r := gin.Default()
-    
-    // ヘルスチェックエンドポイント
-    r.GET("/health", func(c *gin.Context) {
-			sqlDB, err := db.DB()
-			if err != nil {
-				c.JSON(500,gin.H{
-					"status":"error",
-					"message": "Failed to get database instance",
-				})
-				return
-			}
-			err = sqlDB.Ping()
-			if err != nil {
-				c.JSON(500,gin.H{
-					"status":"error",
-					"message": "Database connection lost",
-				})
-				return
-			}
-			c.JSON(200,gin.H{
-				"status":"ok",
-				"message":"connected"
-			})
-    })
+	//ハンドラーの初期化
+	healthHandler := handlers.NewHealthHandler(db)
+	authHandler := handlers.NewAuthHandler(GoogleOAuth)
 
-		r.GET("/auth/login", func(c *gin.Context) {
-			authURL := GoogleOAuth.GetAuthURL()
-			c.Redirect(302,authURL)
-		})
+	//ルーターのセットアップ
+	r := router.SetupRouter(healthHandler,authHandler)
 
-		log.Println("Starting server on Port:8080")
-		r.Run(":8080")
+	log.Println("Starting server on Port:8080")
+	if err := r.Run(":8080"); err != nil{
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }
 

@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"log"
+
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -10,6 +12,9 @@ type GoogleOAuth struct {
 }
 
 func NewGoogleOAuth(clientID, clientSecret,redirectURL string) *GoogleOAuth {
+	log.Printf("Initializing Google OAuth with:")
+  log.Printf("Client ID: %s", clientID[:5]+"...") // セキュリティのため全文は表示しない
+  log.Printf("Redirect URL: %s", redirectURL)
 	return &GoogleOAuth{
 		config: &oauth2.Config{
 			ClientID: clientID,
