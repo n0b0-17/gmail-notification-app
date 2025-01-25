@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(healthHandler *handlers.HealthHandler, authHandler *handlers.AuthHandler) *gin.Engine{
+func SetupRouter(healthHandler *handlers.HealthHandler, authHandler *handlers.AuthHandler, gmailHandler *handlers.GmailHandler) *gin.Engine{
 	r := gin.Default()
 	
 	// パニックリカバリーミドルウェアを追加
@@ -18,6 +18,11 @@ func SetupRouter(healthHandler *handlers.HealthHandler, authHandler *handlers.Au
 	{
 		auth.GET("/login",authHandler.Login)
 		auth.GET("/callback",authHandler.Callback)
+	}
+
+	gmail := r.Group("/gmail")
+	{
+		gmail.GET("/messages", gmailHandler.ListEmails)
 	}
 	return r
 }

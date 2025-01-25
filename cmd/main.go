@@ -7,7 +7,6 @@ import (
 	"gmail-notification-app/internal/interfaces/handlers"
 	"gmail-notification-app/internal/interfaces/router"
 	"log"
-
 )
 
 func main() {
@@ -30,16 +29,19 @@ func main() {
 		log.Fatalf("Failed to initialized GoogleOAuth")
 	}
 
+
 	//ハンドラーの初期化
 	healthHandler := handlers.NewHealthHandler(db)
-	authHandler := handlers.NewAuthHandler(GoogleOAuth,db)
+	authHandler := handlers.NewAuthHandler(GoogleOAuth, db)
+	gmailHandler := handlers.NewGmailHandler(GoogleOAuth, db)
 
 	//ルーターのセットアップ
-	r := router.SetupRouter(healthHandler,authHandler)
+	r := router.SetupRouter(healthHandler,authHandler,gmailHandler)
 
-	log.Println("Starting server on Port:8080")
 	if err := r.Run(":8080"); err != nil{
 		log.Fatalf("Server failed to start: %v", err)
 	}
+
+
 }
 
