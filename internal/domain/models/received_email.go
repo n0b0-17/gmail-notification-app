@@ -12,4 +12,5 @@ type RecievedEmail struct {
 	ToEmail string `gorm:"not null"`
 	RecievedAt time.Time `gorm:"not null"`
 	Contnet string `gorm:"not null"`
+	Amount int64 `gorm:"not null"`
 }

@@ -22,7 +22,7 @@ func NewGmailHandler(googleOauth *oauth.GoogleOAuth,db *gorm.DB) *GmailHandler {
 	}
 }
 
-func (h *GmailHandler) ListEmails(c *gin.Context) {
+func (h *GmailHandler) SavedEmails(c *gin.Context) {
 	var user models.User
 
 	if err := h.db.First(&user).Error; err != nil {
@@ -43,27 +43,40 @@ func (h *GmailHandler) ListEmails(c *gin.Context) {
 		return 
 	}
 
-	var messageDetails []map[string]interface{}
-	for _, msg := range messages{
-		headers := msg.Payload.Headers
-		detail := make(map[string]interface{})
 
-		for _, header := range headers{
-			switch header.Name {
-			case "From":
-				detail["from"] = header.Value
-			case "Subject":
-				detail["subject"] = header.Value
-			case "Date":
-				detail["date"] = header.Value
-			}			
-			detail["id"] = msg.Id
-			messageDetails = append(messageDetails, detail)
-		}
+	//DBに保存するトランザクション
+	tx := h.db.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"Failed to begin transaction"})
+		return 
 	}
 
+	var savedEmails []models.RecievedEmail
+
+	for _, msg  := range messages{
+		email := gmail.ConvertToRecievedEmail(msg)
+
+		var existingEmail models.RecievedEmail
+		if err := h.db.Where("recieved_at = ?",email.RecievedAt).First(&existingEmail).Error; err == nil{
+				continue
+			}	
+
+		if err := tx.Create(email).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Failed to save emails"})
+			return
+		}
+		savedEmails = append(savedEmails, *email)
+	}
+
+	//トランザクションのコミット
+	if err := tx.Commit().Error; err!= nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"messages": messageDetails,
+		"message": "Emails saved successfully",
+		"count": len(savedEmails),
 	})
 
 }

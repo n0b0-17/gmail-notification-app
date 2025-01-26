@@ -22,7 +22,7 @@ func SetupRouter(healthHandler *handlers.HealthHandler, authHandler *handlers.Au
 
 	gmail := r.Group("/gmail")
 	{
-		gmail.GET("/messages", gmailHandler.ListEmails)
+		gmail.GET("/saved", gmailHandler.SavedEmails)
 	}
 	return r
 }
