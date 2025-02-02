@@ -16,14 +16,10 @@ func NewDatabase(dsn string) (*gorm.DB, error){
 	}
 
 	//自動マイグレートスキーマ
-	err = db.AutoMigrate(&models.User{})
+	err = db.AutoMigrate(&models.User{}, &models.RecievedEmail{}, &models.DailyTotal{})
 	if err != nil{
 		log.Printf("Failed to migrate database: %v", err)
 		return nil, err
-	}
-
-	if err := db.AutoMigrate(&models.RecievedEmail{}); err != nil {
-		log.Fatalf("Failed to migrate: %v", err)
 	}
 
 	return db,nil

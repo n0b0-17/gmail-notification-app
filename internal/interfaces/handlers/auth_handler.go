@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
@@ -93,6 +94,11 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 		})
 		return 
 	}
+
+	//セッションの設定
+	session := sessions.Default(c)
+	session.Set("user_email", userInfo.Email)
+	session.Save()
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Token recieved",

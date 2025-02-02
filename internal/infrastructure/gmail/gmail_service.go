@@ -64,7 +64,7 @@ func (g *GmailService)getMessage(messageId string) (*gmail.Message, error) {
 }
 
 func ConvertToRecievedEmail(message *gmail.Message) *models.RecievedEmail {
-	var fromEmail string
+	var fromEmail,toEmail string
 
 	recivedAt := time.Unix(message.InternalDate/1000, 0)
 
@@ -75,19 +75,24 @@ func ConvertToRecievedEmail(message *gmail.Message) *models.RecievedEmail {
 		case "From":
 			//正規表現を用いてEmailアドレスを取得する
 			//memo:Type Messageの中にはEmailアドレスのみを値として持つフィールドがないらしい。。←そんなことある？
-			if matches := emailRegex.FindString(header.Name); matches != "" {
+			if matches := emailRegex.FindString(header.Value); matches != "" {
 				fromEmail = matches
+			}
+		case "To":
+			if matches := emailRegex.FindString(header.Value); matches != "" {
+				toEmail = matches
 			}
 		}
 	}
 
 	//メール本文の取得
 	content := getMessageContent(message.Payload)
+	//メールの本文から引落金額を取得
 	amount := extractAmount(content)
 
 	return &models.RecievedEmail{
 		FromEmail: fromEmail,
-		ToEmail: "me",
+		ToEmail: toEmail,
 		RecievedAt: recivedAt,
 		Contnet: content,
 		Amount: int64(amount),
